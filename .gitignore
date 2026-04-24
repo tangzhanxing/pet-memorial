@@ -1,0 +1,40 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+
+# Android/IntelliJ
+build/
+.idea/
+.gradle
+local.properties
+*.iml
+*.hprof
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+flutter_export_environment.sh
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jar
+*.so
+*.dylib
+build/
