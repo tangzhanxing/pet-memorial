@@ -23,16 +23,17 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
     
-    - name: Create local.properties
-      run: |
-        echo "sdk.dir=$ANDROID_HOME" > android/local.properties
-        echo "flutter.sdk=/opt/flutter" >> android/local.properties
-    
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
         version: '3.24.0'
+    
+    - name: Create local.properties
+      run: |
+        echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+        echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+      shell: bash
     
     - name: Get dependencies
       run: flutter pub get
@@ -41,9 +42,3 @@ jobs:
       run: flutter build apk --debug
       env:
         JAVA_HOME: /usr/lib/jvm/temurin-17-jdk
-    
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
