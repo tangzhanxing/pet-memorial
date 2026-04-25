@@ -23,11 +23,6 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
     
-    - name: Decode debug keystore
-      run: |
-        echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > app/debug.keystore
-      shell: bash
-    
     - name: Create local.properties
       run: |
         echo "sdk.dir=$ANDROID_HOME" > android/local.properties
