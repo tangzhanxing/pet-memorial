@@ -10,29 +10,25 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  # 图片选择
+# 图片选择
   image_picker: ^1.0.7
-  # 本地存储
+# 本地存储
   shared_preferences: ^2.2.2
   path_provider: ^2.1.2
-  # 3D模型渲染
+# 3D模型渲染
   model_viewer_plus: ^1.8.1
-  # 语音识别 & 合成
+# 语音识别 & 合成
   speech_to_text: ^6.6.0
   flutter_tts: ^3.8.5
-  # 音频播放
+# 音频播放
   audioplayers: ^5.2.1
-  # HTTP请求
+# HTTP请求
   http: ^1.2.0
-  # JSON解析
+# JSON解析
   json_annotation: ^4.8.1
-  # 状态管理
+# 状态管理
   provider: ^6.1.1
-  # 相册
-  photo_manager: ^3.0.0
-  # 权限
-  permission_handler: ^11.3.0
-  # uuid
+# uuid
   uuid: ^4.3.3
 
 dev_dependencies:
