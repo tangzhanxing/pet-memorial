@@ -26,7 +26,7 @@ class PetMemorialApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF8B5CF6), // 紫色系，温暖治愈
+            seedColor: const Color(0xFF8B5CF6),
             brightness: Brightness.light,
           ),
           useMaterial3: true,
@@ -37,7 +37,7 @@ class PetMemorialApp extends StatelessWidget {
           '/create': (context) => const CreatePetScreen(),
           '/pet': (context) {
             final pet = ModalRoute.of(context)!.settings.arguments as PetModel;
-            return PetDetailScreen(pet: pet);
+            return PetDetailScreen(petModel: pet);
           },
         },
       ),

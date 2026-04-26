@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../main.dart';
 import '../models/pet_data.dart';
+import '../providers/pet_provider.dart';
 import '../services/storage_service.dart';
 import '../services/model_gen_service.dart';
 

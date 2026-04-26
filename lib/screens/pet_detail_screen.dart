@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import '../models/pet_data.dart';
+import '../providers/pet_provider.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
 class PetDetailScreen extends StatelessWidget {
@@ -242,7 +243,7 @@ class PetDetailScreen extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.campaign),
-            label: const Text('Call ${pet.name}'),
+            label: Text('Call ${pet.name}'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),

@@ -4,18 +4,18 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:math';
 
+/// 生成状态
+enum GenerationStatus { pending, processing, completed, failed }
+
 /// 3D模型生成服务 - 连接云端AI API
 /// 支持多种后端：Meshy, Luma AI, Tripo3D 等
 class ModelGenService {
   // ===== 可配置的API密钥 =====
   // 请替换为你申请的API密钥
   static const String _meshyApiKey = 'YOUR_MESHY_API_KEY';
-  static const String _tripoApiKey = 'YOUR_TRIPO_API_KEY';
+static const String _tripoApiKey = 'YOUR_TRIPO_API_KEY';
 
-  /// 生成状态
-  enum GenerationStatus { pending, processing, completed, failed }
-
-  /// 生成结果
+ /// 生成结果
   static Future<ModelGenResult> generateFromImages(List<String> imagePaths) async {
     // 检查是否有可用的API密钥
     if (_meshyApiKey == 'YOUR_MESHY_API_KEY' && _tripoApiKey == 'YOUR_TRIPO_API_KEY') {
