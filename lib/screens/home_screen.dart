@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
-import '../models/pet_data.dart';
+import '../models/pet_model.dart';
 import '../providers/pet_provider.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
@@ -151,7 +151,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _build3DViewer(PetData pet) {
+Widget _build3DViewer(PetModel pet) {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -167,21 +167,21 @@ class HomeScreen extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: pet.modelPath != null
-            ? ModelViewer(
-                src: pet.modelPath!,
-                alt: '3D model of ${pet.name}',
-                ar: false,
-                autoRotate: true,
-                cameraControls: true,
-                backgroundColor: const Color(0xF5F5F5),
-              )
-            : _buildPlaceholder3D(pet),
+        child: pet.localModelPath != null
+        ? ModelViewer(
+          src: pet.localModelPath!,
+          alt: '3D model of ${pet.name}',
+          ar: false,
+          autoRotate: true,
+          cameraControls: true,
+          backgroundColor: const Color(0xF5F5F5),
+        )
+        : _buildPlaceholder3D(pet),
       ),
     );
   }
 
-  Widget _buildPlaceholder3D(PetData pet) {
+  Widget _buildPlaceholder3D(PetModel pet) {
     // 演示模式：显示占位符
     return Center(
       child: Column(
@@ -216,79 +216,58 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInteractionPanel(BuildContext context, PetData pet) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // 名字和基本信息
-          Text(
-            pet.name,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+Widget _buildInteractionPanel(BuildContext context, PetModel pet) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      children: [
+        // 名字和基本信息
+        Text(
+          pet.name,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
-          if (pet.breed.isNotEmpty)
-            Text(
-              pet.breed,
-              style: TextStyle(color: Colors.grey[600]),
+        ),
+        Text(
+          pet.species == 'dog' ? 'Dog' : pet.species == 'cat' ? 'Cat' : 'Pet',
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const Spacer(),
+
+        // 互动按钮组
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildActionButton(
+              context,
+              icon: Icons.campaign,
+              label: 'Call',
+              onTap: () => _onCallPet(context, pet),
             ),
-          const Spacer(),
-
-          // 互动按钮组
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildActionButton(
-                context,
-                icon: Icons.campaign,
-                label: 'Call',
-                onTap: () => _onCallPet(context, pet),
-              ),
-              _buildActionButton(
-                context,
-                icon: Icons.pan_tool,
-                label: 'Pet',
-                onTap: () => _onPetPet(context, pet),
-              ),
-              _buildActionButton(
-                context,
-                icon: Icons.pets,
-                label: 'Sit',
-                onTap: () => _onCommandPet(context, pet, 'sit'),
-              ),
-              _buildActionButton(
-                context,
-                icon: Icons.nightlight,
-                label: 'Sleep',
-                onTap: () => _onCommandPet(context, pet, 'sleep'),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // 纪念文字
-          if (pet.memoryText != null && pet.memoryText!.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '"${pet.memoryText}"',
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey[700],
-                ),
-                textAlign: TextAlign.center,
-              ),
+            _buildActionButton(
+              context,
+              icon: Icons.pan_tool,
+              label: 'Pet',
+              onTap: () => _onPetPet(context, pet),
             ),
-        ],
-      ),
-    );
-  }
+            _buildActionButton(
+              context,
+              icon: Icons.pets,
+              label: 'Sit',
+              onTap: () => _onCommandPet(context, pet, 'sit'),
+            ),
+            _buildActionButton(
+              context,
+              icon: Icons.nightlight,
+              label: 'Sleep',
+              onTap: () => _onCommandPet(context, pet, 'sleep'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildActionButton(
     BuildContext context, {
@@ -312,40 +291,36 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _onCallPet(BuildContext context, PetData pet) {
-    // 叫宠物名字 - 触发叫声和动画
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${pet.name} is responding...'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-    // TODO: 播放叫声 + 播放动画
-  }
+void _onCallPet(BuildContext context, PetModel pet) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('${pet.name} is responding...'),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
 
-  void _onPetPet(BuildContext context, PetData pet) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('You pet ${pet.name}'),
-        duration: const Duration(seconds: 1),
-      ),
-    );
-    // TODO: 播放舒服的动画
-  }
+void _onPetPet(BuildContext context, PetModel pet) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('You pet ${pet.name}'),
+      duration: const Duration(seconds: 1),
+    ),
+  );
+}
 
-  void _onCommandPet(BuildContext context, PetData pet, String command) {
-    final messages = {
-      'sit': '${pet.name} is sitting down',
-      'sleep': '${pet.name} is going to sleep',
-      'stand': '${pet.name} is standing up',
-      'shake': '${pet.name} is shaking',
-    };
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(messages[command] ?? '${pet.name} is doing something'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-    // TODO: 播放对应动画
-  }
+void _onCommandPet(BuildContext context, PetModel pet, String command) {
+  final messages = {
+    'sit': '${pet.name} is sitting down',
+    'sleep': '${pet.name} is going to sleep',
+    'stand': '${pet.name} is standing up',
+    'shake': '${pet.name} is shaking',
+  };
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(messages[command] ?? '${pet.name} is doing something'),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
 }

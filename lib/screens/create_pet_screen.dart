@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../main.dart';
-import '../models/pet_data.dart';
+import '../models/pet_model.dart';
 import '../providers/pet_provider.dart';
-import '../services/storage_service.dart';
 import '../services/model_gen_service.dart';
 
 class CreatePetScreen extends StatefulWidget {
@@ -17,12 +15,8 @@ class CreatePetScreen extends StatefulWidget {
 class _CreatePetScreenState extends State<CreatePetScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _breedController = TextEditingController();
-  final _memoryController = TextEditingController();
 
   String _selectedSpecies = 'dog';
-  DateTime? _birthDate;
-  DateTime? _deathDate;
 
   final List<XFile> _selectedImages = [];
   bool _isGenerating = false;
@@ -31,8 +25,6 @@ class _CreatePetScreenState extends State<CreatePetScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _breedController.dispose();
-    _memoryController.dispose();
     super.dispose();
   }
 
@@ -55,14 +47,6 @@ class _CreatePetScreenState extends State<CreatePetScreen> {
 
               // 基本信息
               _buildBasicInfoSection(),
-              const SizedBox(height: 24),
-
-              // 日期信息
-              _buildDateSection(),
-              const SizedBox(height: 24),
-
-              // 纪念文字
-              _buildMemorySection(),
               const SizedBox(height: 24),
 
               // 生成按钮
@@ -108,11 +92,9 @@ class _CreatePetScreenState extends State<CreatePetScreen> {
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: AssetImage(_selectedImages[index].path),
-                          fit: BoxFit.cover,
-                        ),
+                        color: Colors.grey[300],
                       ),
+                      child: const Icon(Icons.photo, size: 40),
                     ),
                     Positioned(
                       top: 4,
@@ -203,103 +185,6 @@ class _CreatePetScreenState extends State<CreatePetScreen> {
             });
           },
         ),
-        const SizedBox(height: 16),
-
-        // 品种
-        TextFormField(
-          controller: _breedController,
-          decoration: const InputDecoration(
-            labelText: 'Breed (Optional)',
-            hintText: 'e.g., Golden Retriever, Persian Cat',
-            border: OutlineInputBorder(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Important Dates', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: _buildDatePicker(
-                label: 'Birth Date',
-                value: _birthDate,
-                onChanged: (date) => setState(() => _birthDate = date),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildDatePicker(
-                label: 'Passing Date',
-                value: _deathDate,
-                onChanged: (date) => setState(() => _deathDate = date),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker({
-    required String label,
-    required DateTime? value,
-    required ValueChanged<DateTime?> onChanged,
-  }) {
-    return InkWell(
-      onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: value ?? DateTime(2020),
-          firstDate: DateTime(1990),
-          lastDate: DateTime.now(),
-        );
-        if (date != null) {
-          onChanged(date);
-        }
-      },
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              value != null
-                  ? '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}'
-                  : 'Select',
-              style: TextStyle(color: value != null ? null : Colors.grey),
-            ),
-            const Icon(Icons.calendar_today, size: 18),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMemorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Memory Note', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _memoryController,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Write a few words about your beloved pet...',
-            border: OutlineInputBorder(),
-          ),
-        ),
       ],
     );
   }
@@ -373,23 +258,17 @@ class _CreatePetScreenState extends State<CreatePetScreen> {
         _generationStatus = 'Model generated! Creating your companion...';
 
         // 3. 创建宠物数据
-        final pet = PetData(
+        final pet = PetModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _nameController.text,
           species: _selectedSpecies,
-          breed: _breedController.text,
-          modelPath: result.modelPath,
-          photoPaths: imagePaths,
+          localModelPath: result.modelPath,
           createdAt: DateTime.now(),
-          birthDate: _birthDate,
-          deathDate: _deathDate,
-          memoryText: _memoryController.text.isNotEmpty ? _memoryController.text : null,
         );
 
         // 4. 保存到存储
         final provider = Provider.of<PetProvider>(context, listen: false);
         provider.addPet(pet);
-        await StorageService.savePets(provider.pets);
 
         _generationStatus = 'Completed! ${pet.name} is ready!';
 

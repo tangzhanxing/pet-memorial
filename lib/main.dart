@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'models/pet_model.dart';
 import 'screens/home_screen.dart';
 import 'screens/create_pet_screen.dart';
-import 'screens/pet_detail_screen.dart';
-import 'services/pet_storage_service.dart';
-import 'services/speech_service.dart';
+import 'providers/pet_provider.dart';
 
 void main() {
   runApp(const PetMemorialApp());
@@ -16,11 +13,8 @@ class PetMemorialApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => PetStorageService()),
-        ChangeNotifierProvider(create: (_) => SpeechService()),
-      ],
+    return ChangeNotifierProvider(
+      create: (_) => PetProvider(),
       child: MaterialApp(
         title: 'Pet Memorial',
         debugShowCheckedModeBanner: false,
@@ -30,15 +24,10 @@ class PetMemorialApp extends StatelessWidget {
             brightness: Brightness.light,
           ),
           useMaterial3: true,
-          fontFamily: 'Roboto',
         ),
         home: const HomeScreen(),
         routes: {
           '/create': (context) => const CreatePetScreen(),
-          '/pet': (context) {
-            final pet = ModalRoute.of(context)!.settings.arguments as PetModel;
-            return PetDetailScreen(petModel: pet);
-          },
         },
       ),
     );
