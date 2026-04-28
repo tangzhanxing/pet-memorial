@@ -13,7 +13,7 @@ class ModelGenService {
   // ===== 可配置的API密钥 =====
   // 请替换为你申请的API密钥
   static const String _meshyApiKey = 'YOUR_MESHY_API_KEY';
-static const String _tripoApiKey = 'YOUR_TRIPO_API_KEY';
+  static const String _tripoApiKey = 'YOUR_TRIPO_API_KEY';
 
  /// 生成结果
   static Future<ModelGenResult> generateFromImages(List<String> imagePaths) async {
@@ -102,7 +102,7 @@ static const String _tripoApiKey = 'YOUR_TRIPO_API_KEY';
     final uploadUrl = Uri.parse('https://api.tripo3d.ai/v1/openapi/形象重建');
 
     final request = http.MultipartRequest('POST', uploadUrl)
-      ..headers['Authorization'] = $_tripoApiKey
+      ..headers['Authorization'] = 'Bearer $_tripoApiKey'
       ..files.add(await http.MultipartFile.fromPath('image', imagePaths.first));
 
     final streamedResponse = await request.send();

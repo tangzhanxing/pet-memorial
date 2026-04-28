@@ -28,7 +28,7 @@ jobs:
         version: '3.24.0'
     
 - name: Create local.properties
- run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+  run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
  - name: Get dependencies
  run: flutter pub get
