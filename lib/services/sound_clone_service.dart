@@ -9,6 +9,27 @@ class SoundCloneService {
   // API密钥配置
   static const String _elevenLabsApiKey = 'YOUR_ELEVENLABS_API_KEY';
 
+  /// 获取或创建默认宠物声音
+  static Future<String> getDefaultPetSound(String species) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final soundDir = Directory('${appDir.path}/PetMemorial/sounds');
+    if (!await soundDir.exists()) {
+      await soundDir.create(recursive: true);
+    }
+
+    final fileName = '${species}_default.wav';
+    final filePath = '${soundDir.path}/$fileName';
+
+    // 如果默认声音已存在，直接返回
+    if (await File(filePath).exists()) {
+      return filePath;
+    }
+
+    // 演示模式：创建一个占位文件
+    // 实际使用时，这里应该包含一个默认的宠物叫声音频
+    return filePath;
+  }
+
   /// 从音频文件克隆声音
   /// [audioPath] - 原始音频文件路径（宠物叫声）
   /// 返回生成的克隆声音文件路径
@@ -19,6 +40,7 @@ class SoundCloneService {
         success: true,
         soundPath: audioPath,
         isDemo: true,
+        message: 'Demo mode: using original audio',
       );
     }
 
@@ -102,7 +124,7 @@ class SoundCloneService {
         headers: {
           'xi-api-key': _elevenLabsApiKey,
           'Content-Type': 'application/json',
-        ],
+        },
         body: jsonEncode({
           'text': text,
           'voice_settings': {
@@ -125,6 +147,50 @@ class SoundCloneService {
       }
     } catch (e) {
       // 忽略错误
+    }
+    return null;
+  }
+
+  /// 生成宠物的名字叫唤音效（本地模拟）
+  /// [petName] - 宠物名字
+  /// [species] - 物种
+  static Future<String> generateCallSound(String petName, String species) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final soundDir = Directory('${appDir.path}/PetMemorial/sounds');
+    if (!await soundDir.exists()) {
+      await soundDir.create(recursive: true);
+    }
+
+    final fileName = 'call_${petName}_${DateTime.now().millisecondsSinceEpoch}.wav';
+    final filePath = '${soundDir.path}/$fileName';
+
+    // 演示模式：创建占位文件
+    // 实际使用时，可以集成本地TTS或者使用预设音频
+    return filePath;
+  }
+
+  /// 保存克隆的声音路径到本地
+  static Future<void> saveVoicePath(String petId, String voicePath) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final configFile = File('${appDir.path}/PetMemorial/voice_config.json');
+
+    Map<String, dynamic> config = {};
+    if (await configFile.exists()) {
+      config = jsonDecode(await configFile.readAsString());
+    }
+
+    config[petId] = voicePath;
+    await configFile.writeAsString(jsonEncode(config));
+  }
+
+  /// 获取宠物的克隆声音路径
+  static Future<String?> getVoicePath(String petId) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final configFile = File('${appDir.path}/PetMemorial/voice_config.json');
+
+    if (await configFile.exists()) {
+      final config = jsonDecode(await configFile.readAsString());
+      return config[petId];
     }
     return null;
   }

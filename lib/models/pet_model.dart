@@ -10,6 +10,12 @@ class PetModel {
   final DateTime createdAt;
   final String? thumbnailPath; // 缩略图
 
+  // 新增：纪念功能
+  final List<String> memorialPhotos; // 纪念照片路径列表
+  final String? memorialNotes; // 纪念备忘录
+  final DateTime? birthDate; // 出生日期
+  final DateTime? passedDate; // 去世日期
+
   PetModel({
     required this.id,
     required this.name,
@@ -20,6 +26,10 @@ class PetModel {
     this.localVoicePath,
     required this.createdAt,
     this.thumbnailPath,
+    this.memorialPhotos = const [],
+    this.memorialNotes,
+    this.birthDate,
+    this.passedDate,
   });
 
   factory PetModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +43,17 @@ class PetModel {
       localVoicePath: json['localVoicePath'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       thumbnailPath: json['thumbnailPath'] as String?,
+      memorialPhotos: (json['memorialPhotos'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      memorialNotes: json['memorialNotes'] as String?,
+      birthDate: json['birthDate'] != null
+          ? DateTime.parse(json['birthDate'] as String)
+          : null,
+      passedDate: json['passedDate'] != null
+          ? DateTime.parse(json['passedDate'] as String)
+          : null,
     );
   }
 
@@ -47,6 +68,10 @@ class PetModel {
       'localVoicePath': localVoicePath,
       'createdAt': createdAt.toIso8601String(),
       'thumbnailPath': thumbnailPath,
+      'memorialPhotos': memorialPhotos,
+      'memorialNotes': memorialNotes,
+      'birthDate': birthDate?.toIso8601String(),
+      'passedDate': passedDate?.toIso8601String(),
     };
   }
 
@@ -60,6 +85,10 @@ class PetModel {
     String? localVoicePath,
     DateTime? createdAt,
     String? thumbnailPath,
+    List<String>? memorialPhotos,
+    String? memorialNotes,
+    DateTime? birthDate,
+    DateTime? passedDate,
   }) {
     return PetModel(
       id: id ?? this.id,
@@ -71,6 +100,10 @@ class PetModel {
       localVoicePath: localVoicePath ?? this.localVoicePath,
       createdAt: createdAt ?? this.createdAt,
       thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+      memorialPhotos: memorialPhotos ?? this.memorialPhotos,
+      memorialNotes: memorialNotes ?? this.memorialNotes,
+      birthDate: birthDate ?? this.birthDate,
+      passedDate: passedDate ?? this.passedDate,
     );
   }
 }

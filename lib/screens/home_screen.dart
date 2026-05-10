@@ -5,8 +5,46 @@ import '../models/pet_model.dart';
 import '../providers/pet_provider.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  String? _lastAction;
+  bool _isAnimating = false;
+  late AnimationController _bounceController;
+  late Animation<double> _bounceAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounceController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _bounceAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _bounceController.dispose();
+    super.dispose();
+  }
+
+  void _triggerBounce() {
+    if (_isAnimating) return;
+    setState(() => _isAnimating = true);
+    _bounceController.forward().then((_) {
+      _bounceController.reverse().then((_) {
+        setState(() => _isAnimating = false);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,32 +190,40 @@ class HomeScreen extends StatelessWidget {
   }
 
 Widget _build3DViewer(PetModel pet) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return AnimatedBuilder(
+      animation: _bounceAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _bounceAnimation.value,
+          child: Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: pet.localModelPath != null
+              ? ModelViewer(
+                  src: pet.localModelPath!,
+                  alt: '3D model of ${pet.name}',
+                  ar: false,
+                  autoRotate: true,
+                  cameraControls: true,
+                  backgroundColor: const Color(0xF5F5F5),
+                )
+              : _buildPlaceholder3D(pet),
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: pet.localModelPath != null
-        ? ModelViewer(
-          src: pet.localModelPath!,
-          alt: '3D model of ${pet.name}',
-          ar: false,
-          autoRotate: true,
-          cameraControls: true,
-          backgroundColor: const Color(0xF5F5F5),
-        )
-        : _buildPlaceholder3D(pet),
-      ),
+        );
+      },
     );
   }
 
@@ -216,63 +262,86 @@ Widget _build3DViewer(PetModel pet) {
     );
   }
 
-Widget _buildInteractionPanel(BuildContext context, PetModel pet) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      children: [
-        // 名字和基本信息
-        Text(
-          pet.name,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          pet.species == 'dog' ? 'Dog' : pet.species == 'cat' ? 'Cat' : 'Pet',
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        const Spacer(),
+  Widget _buildInteractionPanel(BuildContext context, PetModel pet) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // 动作反馈
+          if (_lastAction != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _lastAction!,
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
 
-        // 互动按钮组
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildActionButton(
-              context,
-              icon: Icons.campaign,
-              label: 'Call',
-              onTap: () => _onCallPet(context, pet),
+          // 名字和基本信息
+          Text(
+            pet.name,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-            _buildActionButton(
-              context,
-              icon: Icons.pan_tool,
-              label: 'Pet',
-              onTap: () => _onPetPet(context, pet),
-            ),
-            _buildActionButton(
-              context,
-              icon: Icons.pets,
-              label: 'Sit',
-              onTap: () => _onCommandPet(context, pet, 'sit'),
-            ),
-            _buildActionButton(
-              context,
-              icon: Icons.nightlight,
-              label: 'Sleep',
-              onTap: () => _onCommandPet(context, pet, 'sleep'),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+          ),
+          Text(
+            pet.species == 'dog' ? 'Dog' : pet.species == 'cat' ? 'Cat' : 'Pet',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+          const Spacer(),
+
+          // 互动按钮组
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildActionButton(
+                context,
+                icon: Icons.campaign,
+                label: 'Call',
+                color: Colors.orange,
+                onTap: () => _onCallPet(context, pet),
+              ),
+              _buildActionButton(
+                context,
+                icon: Icons.favorite,
+                label: 'Love',
+                color: Colors.pink,
+                onTap: () => _onPetPet(context, pet),
+              ),
+              _buildActionButton(
+                context,
+                icon: Icons.pets,
+                label: 'Sit',
+                color: Colors.blue,
+                onTap: () => _onCommandPet(context, pet, 'sit'),
+              ),
+              _buildActionButton(
+                context,
+                icon: Icons.nightlight,
+                label: 'Sleep',
+                color: Colors.purple,
+                onTap: () => _onCommandPet(context, pet, 'sleep'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildActionButton(
     BuildContext context, {
     required IconData icon,
     required String label,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -282,7 +351,7 @@ Widget _buildInteractionPanel(BuildContext context, PetModel pet) {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           children: [
-            Icon(icon, size: 32, color: Theme.of(context).primaryColor),
+            Icon(icon, size: 32, color: color),
             const SizedBox(height: 4),
             Text(label, style: const TextStyle(fontSize: 12)),
           ],
@@ -291,36 +360,28 @@ Widget _buildInteractionPanel(BuildContext context, PetModel pet) {
     );
   }
 
-void _onCallPet(BuildContext context, PetModel pet) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('${pet.name} is responding...'),
-      duration: const Duration(seconds: 2),
-    ),
-  );
-}
+  void _onCallPet(BuildContext context, PetModel pet) {
+    _triggerBounce();
+    setState(() {
+      _lastAction = '🎵 ${pet.name} is coming!';
+    });
+  }
 
-void _onPetPet(BuildContext context, PetModel pet) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('You pet ${pet.name}'),
-      duration: const Duration(seconds: 1),
-    ),
-  );
-}
+  void _onPetPet(BuildContext context, PetModel pet) {
+    setState(() {
+      _lastAction = '💕 ${pet.name} feels loved!';
+    });
+  }
 
-void _onCommandPet(BuildContext context, PetModel pet, String command) {
-  final messages = {
-    'sit': '${pet.name} is sitting down',
-    'sleep': '${pet.name} is going to sleep',
-    'stand': '${pet.name} is standing up',
-    'shake': '${pet.name} is shaking',
-  };
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(messages[command] ?? '${pet.name} is doing something'),
-      duration: const Duration(seconds: 2),
-    ),
-  );
-}
+  void _onCommandPet(BuildContext context, PetModel pet, String command) {
+    final messages = {
+      'sit': '🐕 ${pet.name} is sitting down',
+      'sleep': '🌙 ${pet.name} is going to sleep',
+      'stand': '🐾 ${pet.name} is standing up',
+      'shake': '🐕 ${pet.name} is wagging tail!',
+    };
+    setState(() {
+      _lastAction = messages[command] ?? '🐾 ${pet.name} is doing something';
+    });
+  }
 }

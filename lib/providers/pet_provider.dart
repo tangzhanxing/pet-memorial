@@ -59,6 +59,48 @@ class PetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 更新宠物信息
+  Future<void> updatePet(PetModel updatedPet) async {
+    final index = _pets.indexWhere((p) => p.id == updatedPet.id);
+    if (index != -1) {
+      _pets[index] = updatedPet;
+      if (_currentPet?.id == updatedPet.id) {
+        _currentPet = updatedPet;
+      }
+      await _savePets();
+      notifyListeners();
+    }
+  }
+
+  /// 添加纪念照片
+  Future<void> addMemorialPhoto(String petId, String photoPath) async {
+    final index = _pets.indexWhere((p) => p.id == petId);
+    if (index != -1) {
+      final pet = _pets[index];
+      final updatedPhotos = List<String>.from(pet.memorialPhotos)..add(photoPath);
+      _pets[index] = pet.copyWith(memorialPhotos: updatedPhotos);
+      if (_currentPet?.id == petId) {
+        _currentPet = _pets[index];
+      }
+      await _savePets();
+      notifyListeners();
+    }
+  }
+
+  /// 更新纪念备忘录
+  Future<void> updateMemorialNotes(String petId, String notes) async {
+    final index = _pets.indexWhere((p) => p.id == petId);
+    if (index != -1) {
+      final pet = _pets[index];
+      _pets[index] = pet.copyWith(memorialNotes: notes);
+      if (_currentPet?.id == petId) {
+        _currentPet = _pets[index];
+      }
+      await _savePets();
+      notifyListeners();
+    }
+  }
+
   /// 删除宠物
   Future<void> deletePet(String id) async {
     _pets.removeWhere((p) => p.id == id);
